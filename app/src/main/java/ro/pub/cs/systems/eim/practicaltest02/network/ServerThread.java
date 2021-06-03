@@ -5,17 +5,20 @@ import android.util.Log;
 import androidx.constraintlayout.solver.Cache;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
+import ro.pub.cs.systems.eim.practicaltest02.BitcoinInfo;
 import ro.pub.cs.systems.eim.practicaltest02.Constants;
+import ro.pub.cs.systems.eim.practicaltest02.Utilities;
 
 public class ServerThread extends Thread {
 
     private boolean isRunning;
-    private HashMap<String, Integer> cache; // currency & rate
+    private HashMap<String, Double> cache; // currency & rate
     private CacheUpdater cacheUpdater;
 
     private ServerSocket serverSocket;
@@ -24,12 +27,15 @@ public class ServerThread extends Thread {
 
     public ServerThread(int serverPort) {
         this.serverPort = serverPort;
-        cacheUpdater = new CacheUpdater();
         cache = new HashMap<>();
+        cache.put(Constants.CURRENCY_USD, 0.0);
+        cache.put(Constants.CURRENCY_EUR, 0.0);
+        cacheUpdater = new CacheUpdater();
     }
 
     public void startServer() {
         isRunning = true;
+        cacheUpdater.start();
         start();
         Log.v(Constants.TAG, "startServer() method was invoked");
     }
@@ -51,8 +57,24 @@ public class ServerThread extends Thread {
         @Override
         public void run() {
             while (isRunning) {
+
+//                Handler handler = new Handler();
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        bla bla
+//                    }
+//                }, 2000);
                 try{
-                    sleep(60*1000);
+                    Log.v(Constants.TAG, "---updating cache--------------------");
+                    BitcoinInfo info = RequestResolver.getInfo();
+                    if (info != null) {
+                        cache.put(Constants.CURRENCY_USD, info.getToUSD());
+                        cache.put(Constants.CURRENCY_EUR, info.getToEUR());
+                    } else  {
+                        Log.e(Constants.TAG, "error getting info");
+                    }
+                    ServerThread.sleep(30*1000);
                 }
                 catch (Exception e){
                     Log.e(Constants.TAG, "error sleep");
@@ -69,7 +91,10 @@ public class ServerThread extends Thread {
                 Socket socket = serverSocket.accept();
                 Log.v(Constants.TAG, "accept()-ed: " + socket.getInetAddress());
                 if (socket != null) {
-                    RequestResolver communicationThread = new RequestResolver(socket);
+                    Double usd, eur;
+                    usd = cache.get(Constants.CURRENCY_USD);
+                    eur = cache.get(Constants.CURRENCY_EUR);
+                    RequestResolver communicationThread = new RequestResolver(socket, usd, eur);
                     communicationThread.start();
                 }
             }

@@ -6,13 +6,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import ro.pub.cs.systems.eim.practicaltest02.network.ClientTask;
 import ro.pub.cs.systems.eim.practicaltest02.network.ServerThread;
 
 public class PracticalTest02MainActivity extends AppCompatActivity {
     private ServerThread serverThread;
     private EditText portText;
+    private ClientTask clientTask;
 
     private class ButtonListener implements View.OnClickListener {
         @Override
@@ -26,12 +29,16 @@ public class PracticalTest02MainActivity extends AppCompatActivity {
                 serverThread.startServer();
                 Log.v(Constants.TAG, "Started server");
             } else if (v.getId() == R.id.requestDataButton) {
-                Log.e(Constants.TAG, "sending ");
-
+                Log.e(Constants.TAG, "requesting currency");
+                clientTask.start();
             } else {
                 Log.e(Constants.TAG, "invalid button");
             }
         }
+    }
+
+    public static void updateResource(TextView textView, String s) {
+        textView.setText(s);
     }
 
     @Override
@@ -40,6 +47,9 @@ public class PracticalTest02MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_practical_test02_main);
 
         portText = findViewById(R.id.portField);
+        clientTask = new ClientTask(portText,
+                findViewById(R.id.result),
+                findViewById(R.id.currency));
         ButtonListener listener = new ButtonListener();
         findViewById(R.id.requestDataButton).setOnClickListener(listener);
         findViewById(R.id.startServerButton).setOnClickListener(listener);
