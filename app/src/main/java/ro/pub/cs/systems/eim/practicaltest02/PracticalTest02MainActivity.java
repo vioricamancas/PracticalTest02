@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +17,7 @@ public class PracticalTest02MainActivity extends AppCompatActivity {
     private ServerThread serverThread;
     private EditText portText;
     private ClientTask clientTask;
+    private Integer currentPort = null;
 
     private class ButtonListener implements View.OnClickListener {
         @Override
@@ -25,6 +27,13 @@ public class PracticalTest02MainActivity extends AppCompatActivity {
                 if (port == null)
                     return;
                 Log.i(Constants.TAG, "Starting server on port"+ port);
+                if (currentPort == null) {
+                    currentPort = port;
+                } else if (!currentPort.equals(port)) {
+                    serverThread.stopServer();
+                } else {
+                    return;
+                }
                 serverThread = new ServerThread(port);
                 serverThread.startServer();
                 Log.v(Constants.TAG, "Started server");

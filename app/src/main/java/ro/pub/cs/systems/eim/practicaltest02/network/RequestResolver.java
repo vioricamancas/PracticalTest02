@@ -77,8 +77,10 @@ public class RequestResolver extends Thread {
             switch (currency) {
                 case Constants.CURRENCY_EUR:
                     printWriter.println(eur);
+                    break;
                 case Constants.CURRENCY_USD:
                     printWriter.println(usd);
+                    break;
                 default:
                     printWriter.println("unsupported currency");
             }

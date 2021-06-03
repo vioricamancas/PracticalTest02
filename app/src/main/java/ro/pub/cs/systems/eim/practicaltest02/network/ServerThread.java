@@ -34,6 +34,8 @@ public class ServerThread extends Thread {
     }
 
     public void startServer() {
+        if (isRunning)
+            return;
         isRunning = true;
         cacheUpdater.start();
         start();
